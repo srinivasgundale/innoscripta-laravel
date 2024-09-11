@@ -66,7 +66,7 @@ class NewsController extends Controller
         $fromDate = $request->input('from');
         $toDate = $request->input('to');
         $category = $request->input('category');
-        $page = $request->input('page', 1); // Default to page 1 if not provided
+        $page = $request->input('page', 0);
         $limit = $request->input('limit');
         $source = $request->input('source');
 

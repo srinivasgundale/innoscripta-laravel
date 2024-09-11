@@ -24,7 +24,7 @@ class NewYorkTimesService implements NewsServiceInterface
                 'api-key' => $this->apiKey,
             ])
         ]);
-
+        //dd($response->getBody()->getContents());
         return json_decode($response->getBody()->getContents(), true)['response']['docs'] ?? [];
     }
 }
