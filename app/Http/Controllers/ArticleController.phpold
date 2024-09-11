@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\NewsService;
+use Illuminate\Http\Request;
+
+class ArticleController extends Controller
+{
+    protected $newsService;
+
+    public function __construct(NewsService $newsService)
+    {
+        $this->newsService = $newsService;
+    }
+
+    // Article Listing with Search and Filter
+    public function list(Request $request)
+    {
+        $query = $request->input('query');
+        $category = $request->input('category');
+        $date = $request->input('date');
+        $source = $request->input('source');
+
+        $articles = [];
+
+        if ($source === 'newsapi') {
+            $articles = $this->newsService->fetchFromNewsAPI($query, $category, $date);
+        } elseif ($source === 'nytimes') {
+            $articles = $this->newsService->fetchFromNYTimes($query, $category, $date);
+        }
+
+        return response()->json([
+            'data' => $articles,
+        ]);
+    }
+}

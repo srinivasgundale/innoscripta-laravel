@@ -31,4 +31,23 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'mediastack' => [
+        'api_key' => env('MEDIASTACK_API_KEY'),
+        'base_url' => env('MEDIASTACK_BASE_URL', 'https://api.mediastack.com/v1/'),
+    ],
+
+    'nytimes' => [
+        'api_key' => env('NYTIMES_API_KEY'),
+        'base_url' => env('NYTIMES_BASE_URL', 'https://api.nytimes.com/svc/'),
+    ],
+
+    'guardian' => [
+        'api_key' => env('GUARDIAN_API_KEY'),
+        'base_url' => env('GUARDIAN_BASE_URL', 'https://content.guardianapis.com/'),
+    ],
+
+    'newsapi' => [
+        'api_key' => env('NEWSAPI_API_KEY'),
+        'base_url' => env('NEWSAPI_BASE_URL', 'https://newsapi.org/v2/'),
+    ],
 ];
