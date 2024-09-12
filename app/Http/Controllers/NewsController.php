@@ -71,6 +71,7 @@ class NewsController extends Controller
         $limit = $request->input('limit');
         $source = $request->input('source');
 
+        // Guardian API Filters
         $guardianFilters = array_filter([
             'q' => $keyword,
             'from' => $fromDate,
@@ -78,16 +79,22 @@ class NewsController extends Controller
             'section' => $category,
             'page-size' => $limit,
             'page' => $page,
-        ]);
+        ], function ($value) {
+            return !empty($value);
+        });
 
+        // NYTimes API Filters
         $nyTimesFilters = array_filter([
             'begin_date' => $fromDate ? str_replace('-', '', $fromDate) : null,
             'end_date' => $toDate ? str_replace('-', '', $toDate) : null,
             'fq' => $category ? 'section_name:("' . $category . '")' : null,
             'page' => $page,
             'q' => $keyword,
-        ]);
+        ], function ($value) {
+            return !empty($value);
+        });
 
+        // NewsAPI Filters
         $newsAPIFilters = array_filter([
             'from' => $fromDate,
             'to' => $toDate,
@@ -95,7 +102,10 @@ class NewsController extends Controller
             'pageSize' => $limit,
             'q' => $keyword,
             'page' => $page,
-        ]);
+        ], function ($value) {
+            return !empty($value);
+        });
+
 
         $nyTimesResults = $this->newYorkTimesService->searchArticles($nyTimesFilters);
         $guardianResults = $this->guardianService->searchArticles($guardianFilters);
@@ -106,7 +116,7 @@ class NewsController extends Controller
             $this->formatGuardianArticles($guardianResults),
             $this->formatNewsAPIArticles($newsAPIResults)
         );
-
+        shuffle($mergedResults);
         // return response()->json($mergedResults);
 
         return response()->json([
