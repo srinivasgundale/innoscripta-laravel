@@ -7,6 +7,7 @@ use App\Services\News\GuardianService;
 use App\Services\News\NewsAPIService;
 use Illuminate\Http\Request;
 use Auth;
+
 class NewsController extends Controller
 {
     protected $newYorkTimesService;
@@ -100,11 +101,68 @@ class NewsController extends Controller
         $guardianResults = $this->guardianService->searchArticles($guardianFilters);
         $newsAPIResults = $this->newsAPIService->searchArticles($newsAPIFilters);
 
+        $mergedResults = array_merge(
+            $this->formatNyTimesArticles($nyTimesResults),
+            $this->formatGuardianArticles($guardianResults),
+            $this->formatNewsAPIArticles($newsAPIResults)
+        );
+
+        // return response()->json($mergedResults);
+
         return response()->json([
             'nytimes' => $nyTimesResults,
             'guardian' => $guardianResults,
             'newsapi' => $newsAPIResults,
+            'articles' => $mergedResults
         ]);
     }
+    private function formatNyTimesArticles($nyTimesResults)
+    {
+        return array_map(function ($article) {
+            return [
+                'headline' => $article['headline']['main'] ?? null,
+                'url' => $article['web_url'] ?? null,
+                'publish_date' => $article['pub_date'] ?? null,
+                'image_url' => $this->getNyTimesImageUrl($article),
+                'source' => 'The New York Times',
+            ];
+        }, $nyTimesResults);
+    }
 
+    private function getNyTimesImageUrl($article)
+    {
+        // Extract the first image from multimedia if available
+        if (!empty($article['multimedia'])) {
+            foreach ($article['multimedia'] as $media) {
+                if ($media['subtype'] === 'xlarge') {
+                    return 'https://www.nytimes.com/' . $media['url'];
+                }
+            }
+        }
+        return null;
+    }
+    private function formatGuardianArticles($guardianResults)
+    {
+        return array_map(function ($article) {
+            return [
+                'headline' => $article['webTitle'] ?? null,
+                'url' => $article['webUrl'] ?? null,
+                'publish_date' => $article['webPublicationDate'] ?? null,
+                'image_url' => null, // Guardian API might not provide an image, adjust accordingly
+                'source' => 'The Guardian',
+            ];
+        }, $guardianResults);
+    }
+    private function formatNewsAPIArticles($newsAPIResults)
+    {
+        return array_map(function ($article) {
+            return [
+                'headline' => $article['title'] ?? null,
+                'url' => $article['url'] ?? null,
+                'publish_date' => $article['publishedAt'] ?? null,
+                'image_url' => $article['urlToImage'] ?? null,
+                'source' => $article['source']['name'] ?? null,
+            ];
+        }, $newsAPIResults);
+    }
 }

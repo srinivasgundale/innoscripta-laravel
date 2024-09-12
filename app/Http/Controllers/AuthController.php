@@ -23,6 +23,7 @@ class AuthController extends Controller
             $user = $this->authService->register($request->validated());
 
             return response()->json([
+                'success' => true,
                 'message' => 'User successfully registered',
                 'user' => $user,
             ], 201);
@@ -38,8 +39,10 @@ class AuthController extends Controller
         if(!$token){
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
+        $user = Auth::user();
         return response()->json([
+            'success' => true,
+            'user' => $user,
             'token' => $token,
         ], 200);
     }
