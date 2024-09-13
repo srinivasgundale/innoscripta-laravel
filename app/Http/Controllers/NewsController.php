@@ -156,7 +156,6 @@ class NewsController extends Controller
 
     private function getNyTimesImageUrl($article)
     {
-        // Extract the first image from multimedia if available
         if (!empty($article['multimedia'])) {
             foreach ($article['multimedia'] as $media) {
                 if ($media['subtype'] === 'xlarge') {
@@ -173,7 +172,7 @@ class NewsController extends Controller
                 'headline' => $article['webTitle'] ?? null,
                 'url' => $article['webUrl'] ?? null,
                 'publish_date' => $article['webPublicationDate'] ?? null,
-                'image_url' => null, // Guardian API might not provide an image, adjust accordingly
+                'image_url' => null,
                 'source' => 'The Guardian',
             ];
         }, $guardianResults);

@@ -2,22 +2,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\UserPreferencesService;
+
 
 class UserController extends Controller
 {
-    protected $preferencesService;
 
-    public function __construct(UserPreferencesService $preferencesService)
+
+    public function __construct()
     {
-        $this->preferencesService = $preferencesService;
+
     }
 
-    public function updatePreferences(Request $request)
+    public function update(Request $request)
     {
         $user = auth()->user();
-        $this->preferencesService->updateUserPreferences($user, $request->input('preferences'));
 
-        return response()->json(['message' => 'Preferences updated successfully.']);
+        // Use mass assignment to update user data
+        $user->update([
+            'name' => $request->name,
+            'main_source' => $request->mainSource ?? $user->main_source,
+            'sub_source' => $request->source ?? $user->sub_source,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully.',
+            'user' => $user,
+        ]);
     }
+
 }
