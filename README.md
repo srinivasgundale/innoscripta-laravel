@@ -1,70 +1,136 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Laravel Project
 
-## Available Scripts
+This repository contains a Laravel project set up to run using Docker. Below are the steps to clone the repository, set up the environment, and run the Laravel application and phpMyAdmin using Docker.
 
-In the project directory, you can run:
+## Project Setup
 
-### `npm start`
+### Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Docker**: Make sure you have Docker installed on your system. You can download and install Docker from [here](https://docs.docker.com/get-docker/).
+- **Docker Compose**: Ensure Docker Compose is also installed (it comes with Docker Desktop).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Steps to Set Up and Run the Project
 
-### `npm test`
+1. **Clone the Repository**:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+   Clone the project repository from GitHub:
 
-### `npm run build`
+   ```bash
+   git clone https://github.com/srinivasgundale/innoscripta-laravel.git
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Navigate to the Project Directory**:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   ```bash
+   cd innoscripta-laravel
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Set up Environment Variables**:
 
-### `npm run eject`
+   Make sure you add a `.env` file to the root folder of the project. You can copy the `.env.example` file and modify it as per your requirements:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```bash
+   cp .env.example .env
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. **Start the Docker Containers**:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   To build and run the application with Docker, use the following command:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   ```bash
+   docker-compose up --build
+   ```
 
-## Learn More
+   This command will:
+   - Build the Docker images.
+   - Start the necessary containers for the Laravel application, MySQL, Nginx, and phpMyAdmin.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+5. **Run Laravel Artisan Commands**:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+   After the containers are up and running, run the following commands to set up the Laravel configuration, database, and other necessary steps:
 
-### Code Splitting
+   - **Clear Configuration Cache**:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+     ```bash
+     docker-compose exec app php artisan config:clear
+     ```
 
-### Analyzing the Bundle Size
+   - **Cache the Configuration**:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+     ```bash
+     docker-compose exec app php artisan config:cache
+     ```
 
-### Making a Progressive Web App
+   - **Run Database Migrations**:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+     ```bash
+     docker-compose exec app php artisan migrate
+     ```
 
-### Advanced Configuration
+   - **Install Laravel Passport**:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+     ```bash
+     docker-compose exec app php artisan passport:install
+     ```
 
-### Deployment
+   - **Set Permissions for Laravel Directories**:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+     Ensure proper permissions for the `storage` and `bootstrap/cache` directories:
 
-### `npm run build` fails to minify
+     ```bash
+     docker-compose exec app chmod -R 777 storage bootstrap/cache
+     ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+6. **Access the Application**:
+
+   Once everything is set up, you can access the Laravel application at:
+
+   - **Laravel Application**: [http://localhost:8000](http://localhost:8000) (You can change the port number in the `docker-compose.yml` file if needed).
+   
+   - **phpMyAdmin**: [http://localhost:8001](http://localhost:8001) (You can change the port number in the `docker-compose.yml` file if needed).
+
+### Changing Port Numbers
+
+If the default ports (`8000` for the Laravel application and `8001` for phpMyAdmin) are already in use or you want to use different ports, you can modify the `docker-compose.yml` file.
+
+- **For Laravel Application**: Modify the `ports` section under the `webserver` service.
+  
+  ```yaml
+  webserver:
+    ports:
+      - "8000:80" # Change the port number on the left side (e.g., "8080:80")
+  ```
+
+- **For phpMyAdmin**: Modify the `ports` section under the `phpmyadmin` service.
+  
+  ```yaml
+  phpmyadmin:
+    ports:
+      - "8001:80" # Change the port number on the left side (e.g., "8081:80")
+  ```
+
+After making changes, restart the containers:
+
+```bash
+docker-compose down
+docker-compose up --build
+```
+
+### Notes
+
+- Ensure that your `.env` file contains correct database credentials, matching those in your `docker-compose.yml` file.
+- All Docker services, including Laravel, MySQL, Nginx, and phpMyAdmin, are managed using Docker Compose.
+- The database is set up using MySQL, and phpMyAdmin is provided for database management via the browser.
+
+### Troubleshooting
+
+If you encounter any issues, here are some potential solutions:
+
+- **Permission Issues**: Ensure you run the `chmod` command to set the appropriate permissions for the `storage` and `bootstrap/cache` directories.
+  
+- **Database Issues**: If the database doesn't work as expected, ensure your `.env` file has the correct MySQL settings (e.g., `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`).
+
+### Conclusion
+
+By following the steps above, you should be able to set up and run this Laravel application inside a Docker environment. If you encounter any problems or need additional help, feel free to create an issue in the repository.
