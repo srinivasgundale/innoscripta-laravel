@@ -70,6 +70,7 @@ class NewsController extends Controller
         $page = $request->input('page', 0);
         $limit = $request->input('limit');
         $source = $request->input('source');
+        $mainSource = $request->input('mainSource');
 
         // Guardian API Filters
         $guardianFilters = array_filter([
@@ -87,9 +88,9 @@ class NewsController extends Controller
         $nyTimesFilters = array_filter([
             'begin_date' => $fromDate ? str_replace('-', '', $fromDate) : null,
             'end_date' => $toDate ? str_replace('-', '', $toDate) : null,
-            'fq' => $category ? 'section_name:("' . $category . '")' : null,
+            //'fq' => $category ? 'section_name:("' . $category . '")' : null,
             'page' => $page,
-            'q' => $keyword,
+            'q' => $keyword ?? 'a',
         ], function ($value) {
             return !empty($value);
         });
@@ -100,16 +101,30 @@ class NewsController extends Controller
             'to' => $toDate,
             'sources' => $source,
             'pageSize' => $limit,
-            'q' => $keyword,
+            'q' => $keyword ?? 'a',
             'page' => $page,
         ], function ($value) {
             return !empty($value);
         });
 
 
-        $nyTimesResults = $this->newYorkTimesService->searchArticles($nyTimesFilters);
-        $guardianResults = $this->guardianService->searchArticles($guardianFilters);
-        $newsAPIResults = $this->newsAPIService->searchArticles($newsAPIFilters);
+        // Initialize result variables
+        $nyTimesResults = [];
+        $guardianResults = [];
+        $newsAPIResults = [];
+
+        // Fetch articles based on the main source
+        if ($mainSource == 'All' || $mainSource == 'nytimes') {
+            $nyTimesResults = $this->newYorkTimesService->searchArticles($nyTimesFilters);
+        }
+
+        if ($mainSource == 'All' || $mainSource == 'guardian') {
+            $guardianResults = $this->guardianService->searchArticles($guardianFilters);
+        }
+
+        if ($mainSource == 'All' || $mainSource == 'newsapi') {
+            $newsAPIResults = $this->newsAPIService->searchArticles($newsAPIFilters);
+        }
 
         $mergedResults = array_merge(
             $this->formatNyTimesArticles($nyTimesResults),

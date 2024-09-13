@@ -1,46 +1,41 @@
-# Use the official PHP image with the required extensions
+# Use the official PHP image with PHP-FPM
 FROM php:8.1-fpm
+
+# Set the working directory
+WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libzip-dev \
-    unzip \
-    libicu-dev \
-    libpq-dev \
-    git \
+    libonig-dev \
     libxml2-dev \
-    && rm -rf /var/lib/apt/lists/*
+    zip \
+    unzip \
+    git \
+    curl
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && docker-php-ext-install intl pdo pdo_mysql zip \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy composer.lock and composer.json
-COPY composer.lock composer.json ./
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install dependencies
-RUN composer install --no-scripts --no-autoloader
+# Copy existing application directory contents
+COPY . /var/www/html
 
-# Copy the rest of the application code
-COPY . .
+# Fix folder permissions for Laravel (set to www-data, Laravel needs write access for specific directories)
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Generate autoload files
-RUN composer dump-autoload
-
-# Expose port 9000
+# Expose port 9000 for PHP-FPM
 EXPOSE 9000
 
-# Start PHP-FPM server
+# Start the php-fpm server
 CMD ["php-fpm"]
