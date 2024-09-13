@@ -86,8 +86,8 @@ class NewsController extends Controller
 
         // NYTimes API Filters
         $nyTimesFilters = array_filter([
-            'begin_date' => $fromDate ? str_replace('-', '', $fromDate) : null,
-            'end_date' => $toDate ? str_replace('-', '', $toDate) : null,
+            'begin_date' => $fromDate ? str_replace('-', '', $fromDate) : '',
+            'end_date' => $toDate ? str_replace('-', '', $toDate) : '',
             //'fq' => $category ? 'section_name:("' . $category . '")' : null,
             'page' => $page,
             'q' => $keyword ?? 'a',
